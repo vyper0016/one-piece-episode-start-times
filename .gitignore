@@ -2,3 +2,4 @@ current_episode.txt
 *.spec
 dist/
 build/
+v/

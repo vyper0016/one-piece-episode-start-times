@@ -14,5 +14,5 @@ Input the episode number manually, press the buttons, or use the mouse wheel to 
 
 ## Notes
 
-- The episode start times are based on [this reddit post](https://www.reddit.com/r/OnePiece/comments/3b7g6d/one_piece_episode_start_times/).
+- The episode start times are based on [this reddit post](https://www.reddit.com/r/OnePiece/comments/sixbxe/one_piece_start_and_title_card_times_if_you_guys/).
 - Mousewheel support may not work on linux according to [this stackoverflow post](https://stackoverflow.com/a/32289245/24978964).
