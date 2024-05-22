@@ -43,6 +43,7 @@ def main():
     app.geometry(f"{WIDTH}x{HEIGHT}")
     app.title("One Piece Timestamps")
     app.resizable(False, False)
+    app.iconbitmap("icon.ico")
     
     try:
         episode = read_current_episode()
