@@ -6,7 +6,9 @@ import mal
 import threading
 from queue import Queue
 import os
+import pickle
 
+LAST_EP = 1105
 ctk.set_appearance_mode("System")  # Modes: system (default), light, dark
 ctk.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
 
@@ -21,50 +23,48 @@ class OnePieceTimestamps(ctk.CTk):
         self.resizable(False, False)
         self.iconbitmap("icon.ico")
         
-        try:
-            episode = self.read_current_episode()
-        except FileNotFoundError:
-            episode = 1
-            self.write_current_episode(episode)
+        if os.path.exists('vars.pkl'):
+            with open('vars.pkl', 'rb') as f:
+                self.current_episode, self.mal_state = pickle.load(f)
+        else:
+            self.current_episode = 1
+            self.mal_state = False
+
             
         def previous_episode():
-            nonlocal episode
-            episode -= 1
-            if episode < 1:
-                episode = 1
+            self.current_episode -= 1
+            if self.current_episode < 1:
+                self.current_episode = 1
                 return
-            self.update_labels(episode)
+            self.update_labels()
             
         def next_episode():
-            nonlocal episode
-            episode += 1
-            if episode > 1105:
-                episode = 1105
+            self.current_episode += 1
+            if self.current_episode > LAST_EP:
+                self.current_episode = 1105
                 return
-            self.update_labels(episode)
+            self.update_labels()
         
         def update_episode(event):
-            nonlocal episode
             if not self.episode_entry.get().isdigit():
                 episode_entry_value = self.episode_entry.get()
                 episode_entry_value = re.sub(r"\D", "", episode_entry_value)
                 self.episode_entry.delete(0, "end")
                 self.episode_entry.insert(0, episode_entry_value)
                 
-            episode = int(self.episode_entry.get())
+            self.current_episode = int(self.episode_entry.get())
             if event.type == '38':
                 if event.delta > 0:
-                    episode += 1
+                    self.current_episode += 1
                 else:
-                    episode -= 1
+                    self.current_episode -= 1
                     
-            if episode < 1:
-                episode = 1
-            elif episode > 1105:
-                episode = 1105           
+            if self.current_episode < 1:
+                self.current_episode = 1
+            elif self.current_episode > 1105:
+                self.current_episode = 1105           
                     
-            self.update_labels(episode)
-            self.update_episode_mal(episode)
+            self.update_labels()
             
         
         episode_label = ctk.CTkLabel(self, text=f"episode:")
@@ -92,37 +92,26 @@ class OnePieceTimestamps(ctk.CTk):
         self.episode_entry.bind("<KeyRelease>", update_episode)
         self.bind("<MouseWheel>", update_episode)
     
-        self.episode_entry.insert(0, str(episode))
+        self.episode_entry.insert(0, str(self.current_episode))
         
-        self.update_labels(episode)
+        self.after(15, self.update_labels)
         
         self.mal_checkbox = ctk.CTkCheckBox(self, text="sync with MAL", command=self.write_mal_sync_state)
-        if self.read_mal_sync_state():
+        if self.mal_state:
             self.mal_checkbox.select()
         self.mal_checkbox.grid(row=4, column=0, columnspan=2, pady=0)
         
         self.mal_update_threads_queue = Queue(20) # TODO: Implement a queue to avoid race conditions
-    
-    def read_current_episode(self):
-        with open("current_episode.txt", "r") as f:
-            current_episode = int(f.read())            
-        return current_episode
-
-    def write_current_episode(self, current_episode):
-        with open("current_episode.txt", "w") as f:
-            f.write(f'{current_episode}')
-            
-    def read_mal_sync_state(self):
-        if os.path.exists("mal_sync_state.txt"):
-            with open("mal_sync_state.txt", "r") as f:
-                mal_sync_state = bool(int(f.read()))
-            return mal_sync_state
-        
+       
     def write_mal_sync_state(self):
-        state = self.mal_checkbox.get()
-        with open("mal_sync_state.txt", "w") as f:
-            f.write(f'{int(state)}')
+        self.mal_state = self.mal_checkbox.get()
+        self.update_episode_mal()
+        self.update_vars()
 
+    def update_vars(self):
+        with open('vars.pkl', 'wb') as f:
+            pickle.dump([self.current_episode, self.mal_state], f)
+    
     def read_timestamps(self, episode: int):
         with open("times.csv", "r") as f:
             data = csv.DictReader(f)
@@ -130,30 +119,30 @@ class OnePieceTimestamps(ctk.CTk):
                 if index == episode:
                     return row
                 
-    def update_labels(self, episode:int):
-        episode_data = self.read_timestamps(episode)
+    def update_labels(self):
+        episode_data = self.read_timestamps(self.current_episode)
         self.episode_entry.delete(0, "end")
-        self.episode_entry.insert(0, str(episode))
+        self.episode_entry.insert(0, str(self.current_episode))
         
         self.timestamp_label.configure(text=episode_data["start_time"] if episode_data["start_time"] else episode_data["title_card_time"])
         comment = episode_data["comment"]
         comment = textwrap.fill(comment, width=30)
         
         self.comment_label.configure(text=comment)
-        self.write_current_episode(episode)
+        self.update_vars()
+        self.update_episode_mal()
         
     def _update_episode_mal(self, episode):
         token = mal.get_token()["access_token"] 
         mal.update_one_piece_episode(token, episode) 
         
-    def update_episode_mal(self, episode):
+    def update_episode_mal(self):
         if not self.mal_checkbox.get():
             return
               
-        thread = threading.Thread(target=self._update_episode_mal, args=(episode,))
+        thread = threading.Thread(target=self._update_episode_mal, args=(self.current_episode,))
         thread.start()
                 
-
 
 if __name__ == "__main__":
     app = OnePieceTimestamps()

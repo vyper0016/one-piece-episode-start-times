@@ -13,7 +13,7 @@ MAL_AUTH_URL = "https://myanimelist.net/v1/oauth2/authorize"
 MAL_TOKEN_URL = "https://myanimelist.net/v1/oauth2/token"
 MAL_API_URL = "https://api.myanimelist.net/v2"
 ONE_PIECE_ID = 21
-VERBOSE = False
+VERBOSE = True
 
 vprint = print if VERBOSE else lambda *a, **k: None
 
