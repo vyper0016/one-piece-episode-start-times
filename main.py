@@ -8,7 +8,7 @@ from queue import Queue
 import os
 import pickle
 
-LAST_EP = 1105
+LAST_EP = 1105  # TODO get this from the csv file, update csv every week
 ctk.set_appearance_mode("System")  # Modes: system (default), light, dark
 ctk.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
 
