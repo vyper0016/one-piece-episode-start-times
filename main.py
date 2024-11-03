@@ -66,34 +66,35 @@ class OnePieceTimestamps(ctk.CTk):
                     
             self.update_labels()
             
+        def make_widgets():
+            episode_label = ctk.CTkLabel(self, text=f"episode:")
+            episode_label.grid(row=0, column=0, pady=10, padx=5, sticky="e")
+            episode_label.configure(font=("Arial", 14))
+            
+            self.episode_entry = ctk.CTkEntry(self, width=70)
+            self.episode_entry.grid(row=0, column=1, pady=10, padx=5, sticky="w")
+            self.episode_entry.configure(font=("Arial", 14))    
+            
+            self.timestamp_label = ctk.CTkLabel(self, text="")
+            self.timestamp_label.grid(row=1, column=0, columnspan=2, padx=15)
+            self.timestamp_label.configure(font=("Arial", 25))
+            
+            self.comment_label = ctk.CTkLabel(self, text="")
+            self.comment_label.grid(row=2, column=0, columnspan=2, padx=10)
+            self.comment_label.configure(font=("Arial", 14))
+            
+            previous_button = ctk.CTkButton(self, text="Previous", command=previous_episode, width=100)
+            previous_button.grid(row=3, column=0, pady=10, padx=7)
+            
+            next_button = ctk.CTkButton(self, text="Next", command=next_episode, width=100)
+            next_button.grid(row=3, column=1, pady=10, padx=7)
+            
+            self.episode_entry.bind("<KeyRelease>", update_episode)
+            self.bind("<MouseWheel>", update_episode)
         
-        episode_label = ctk.CTkLabel(self, text=f"episode:")
-        episode_label.grid(row=0, column=0, pady=10, padx=5, sticky="e")
-        episode_label.configure(font=("Arial", 14))
+            self.episode_entry.insert(0, str(self.current_episode))
         
-        self.episode_entry = ctk.CTkEntry(self, width=70)
-        self.episode_entry.grid(row=0, column=1, pady=10, padx=5, sticky="w")
-        self.episode_entry.configure(font=("Arial", 14))    
-        
-        self.timestamp_label = ctk.CTkLabel(self, text="")
-        self.timestamp_label.grid(row=1, column=0, columnspan=2, padx=15)
-        self.timestamp_label.configure(font=("Arial", 25))
-        
-        self.comment_label = ctk.CTkLabel(self, text="")
-        self.comment_label.grid(row=2, column=0, columnspan=2, padx=10)
-        self.comment_label.configure(font=("Arial", 14))
-        
-        previous_button = ctk.CTkButton(self, text="Previous", command=previous_episode, width=100)
-        previous_button.grid(row=3, column=0, pady=10, padx=7)
-        
-        next_button = ctk.CTkButton(self, text="Next", command=next_episode, width=100)
-        next_button.grid(row=3, column=1, pady=10, padx=7)
-        
-        self.episode_entry.bind("<KeyRelease>", update_episode)
-        self.bind("<MouseWheel>", update_episode)
-    
-        self.episode_entry.insert(0, str(self.current_episode))
-        
+        make_widgets()
         self.after(15, self.update_labels)
         
         self.mal_checkbox = ctk.CTkCheckBox(self, text="sync with MAL", command=self.write_mal_sync_state)
