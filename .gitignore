@@ -1,5 +1,10 @@
 current_episode.txt
 *.spec
+*.pkl
 dist/
 build/
 v/
+mal_token.pkl
+mal_auth.json
+__pycache__/
+mal_sync_state.txt
