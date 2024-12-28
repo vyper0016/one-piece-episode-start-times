@@ -7,6 +7,9 @@ import threading
 from queue import Queue
 import os
 import pickle
+import pygetwindow as gw
+import keyboard
+import time
 
 LAST_EP = 1105  # TODO get this from the csv file, update csv every week
 ctk.set_appearance_mode("System")  # Modes: system (default), light, dark
@@ -29,21 +32,6 @@ class OnePieceTimestamps(ctk.CTk):
         else:
             self.current_episode = 1
             self.mal_state = False
-
-            
-        def previous_episode():
-            self.current_episode -= 1
-            if self.current_episode < 1:
-                self.current_episode = 1
-                return
-            self.update_labels()
-            
-        def next_episode():
-            self.current_episode += 1
-            if self.current_episode > LAST_EP:
-                self.current_episode = 1105
-                return
-            self.update_labels()
         
         def update_episode(event):
             if not self.episode_entry.get().isdigit():
@@ -83,10 +71,10 @@ class OnePieceTimestamps(ctk.CTk):
             self.comment_label.grid(row=2, column=0, columnspan=2, padx=10)
             self.comment_label.configure(font=("Arial", 14))
             
-            previous_button = ctk.CTkButton(self, text="Previous", command=previous_episode, width=100)
+            previous_button = ctk.CTkButton(self, text="Previous", command=self.previous_episode, width=100)
             previous_button.grid(row=3, column=0, pady=5, padx=7)
             
-            next_button = ctk.CTkButton(self, text="Next", command=next_episode, width=100)
+            next_button = ctk.CTkButton(self, text="Next", command=self.next_episode, width=100)
             next_button.grid(row=3, column=1, pady=5, padx=7)
             
             self.episode_entry.bind("<KeyRelease>", update_episode)
@@ -102,8 +90,36 @@ class OnePieceTimestamps(ctk.CTk):
             self.mal_checkbox.select()
         self.mal_checkbox.grid(row=4, column=0, columnspan=2, pady=0)
         
-        self.mal_update_threads_queue = Queue(20) # TODO: Implement a queue to avoid race conditions
-       
+        #self.mal_update_threads_queue = Queue(20) # TODO: Implement a queue to avoid race conditions
+    
+        self.after(20, self.check_active_window)
+            
+    def previous_episode(self):
+        self.current_episode -= 1
+        if self.current_episode < 1:
+            self.current_episode = 1
+            return
+        self.update_labels()
+        
+    def next_episode(self):
+        self.current_episode += 1
+        if self.current_episode > LAST_EP:
+            self.current_episode = 1105
+            return
+        self.update_labels()
+            
+    def check_active_window(self):
+        active_window = gw.getActiveWindow()
+        if active_window and 'One Piece' in active_window.title:
+            if keyboard.is_pressed('page down'):
+                self.next_episode()
+                time.sleep(0.2)
+            elif keyboard.is_pressed('page up'):
+                self.previous_episode()
+                time.sleep(0.2)
+        self.after(20, self.check_active_window)
+            
+    
     def write_mal_sync_state(self):
         self.mal_state = self.mal_checkbox.get()
         self.update_episode_mal()
