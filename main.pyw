@@ -68,7 +68,7 @@ class OnePieceTimestamps(ctk.CTk):
             
         def make_widgets():
             episode_label = ctk.CTkLabel(self, text=f"episode:")
-            episode_label.grid(row=0, column=0, pady=10, padx=5, sticky="e")
+            episode_label.grid(row=0, column=0, pady=5, padx=5, sticky="e")
             episode_label.configure(font=("Arial", 14))
             
             self.episode_entry = ctk.CTkEntry(self, width=70)
@@ -84,10 +84,10 @@ class OnePieceTimestamps(ctk.CTk):
             self.comment_label.configure(font=("Arial", 14))
             
             previous_button = ctk.CTkButton(self, text="Previous", command=previous_episode, width=100)
-            previous_button.grid(row=3, column=0, pady=10, padx=7)
+            previous_button.grid(row=3, column=0, pady=5, padx=7)
             
             next_button = ctk.CTkButton(self, text="Next", command=next_episode, width=100)
-            next_button.grid(row=3, column=1, pady=10, padx=7)
+            next_button.grid(row=3, column=1, pady=5, padx=7)
             
             self.episode_entry.bind("<KeyRelease>", update_episode)
             self.bind("<MouseWheel>", update_episode)
